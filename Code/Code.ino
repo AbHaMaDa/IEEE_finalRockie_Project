@@ -17,7 +17,7 @@
 
 
 // variables that are used in the code
-int speedValue == 255 ;
+int speedValue = 255 ;
 char mode = 'M';   // M || L || F
 char order;
 
