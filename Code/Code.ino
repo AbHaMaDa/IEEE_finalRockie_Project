@@ -1,3 +1,5 @@
+#include <PID_v1.h>
+
 
 #define MOTOR_L_IN1       13
 #define MOTOR_L_IN2       12
@@ -6,15 +8,18 @@
 #define speedControlerR   10 
 #define speedControlerL   9
 
+#define sensor_1st A0
+#define sensor_2nd A1
+#define sensor_3th A2
+#define sensor_4th A3
+#define sensor_5th A4
+
 
 
 // variables that are used in the code
 int speedValue ;
 char mode = 'M';   // M || L || F
 char order;
-
-
-
 
 
 // function prototypes that are used in the code
@@ -42,8 +47,15 @@ void setup() {
   pinMode(MOTOR_R_IN4, OUTPUT);
   pinMode(speedControlerR, OUTPUT);
   pinMode(speedControlerL, OUTPUT);
+  //sensors pins
+  pinMode(sensor_1st,INPUT);
+  pinMode(sensor_2nd,INPUT);
+  pinMode(sensor_3th,INPUT);
+  pinMode(sensor_4th,INPUT);
+  pinMode(sensor_5th,INPUT);
 
-  Serial.begin(9600);
+
+  Serial.begin(9600); // Use the default Serial
   Serial.println("ROBOT is Ready!");
   Serial.println(" You Now Are In Manual Mode");
 
@@ -115,7 +127,15 @@ void Manual(){ //1st mode
 
 void LineFollowing(){ //2nd mode
   // code of line following
-  Serial.println(" You Now Are In Line Following Mode");
+  if((digitalRead(sensor_2nd) == 0)  && (digitalRead(sensor_4th) == 0)){
+    movingForward();
+  }else if ((digitalRead(sensor_2nd) == 1)  && (digitalRead(sensor_4th) == 0)){
+    turningLeft();
+  }else if ((digitalRead(sensor_2nd) == 0)  && (digitalRead(sensor_4th) == 1)){
+    turningRight();
+  }else if ((digitalRead(sensor_2nd) == 1)  && (digitalRead(sensor_4th) == 1)){
+    stopMoving();
+  }
 
   
 }
