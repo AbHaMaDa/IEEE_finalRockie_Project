@@ -17,7 +17,7 @@
 
 
 // variables that are used in the code
-int speedValue ;
+int speedValue == 255 ;
 char mode = 'M';   // M || L || F
 char order;
 
@@ -104,7 +104,6 @@ void loop() {
 
 void Manual(){ //1st mode
 
-  speedValue = 200;
   // set the speed value to be between 0 and 255
   speedValue = constrain(speedValue, 0, 255);
   // check the order and execute the corresponding function
@@ -126,6 +125,7 @@ void Manual(){ //1st mode
 
 
 void LineFollowing(){ //2nd mode
+  speedValue = 180;
   // code of line following
   if((digitalRead(sensor_2nd) == 0)  && (digitalRead(sensor_4th) == 0)){
     movingForward();
