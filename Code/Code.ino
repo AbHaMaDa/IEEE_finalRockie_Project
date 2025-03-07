@@ -1,5 +1,8 @@
 #include <PID_v1.h>
+#include <LiquidCrystal_I2C.h>  // Include the LiquidCrystal_I2C library
 
+/* Create an instance of the LCD display */
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 #define MOTOR_L_IN1       13
 #define MOTOR_L_IN2       12
@@ -21,6 +24,9 @@ int speedValue = 255 ;
 char mode = 'M';   // M || L || F
 char order;
 
+// fun for lcd
+void lcdSpeed();
+void lcdMessage(const char* message);
 
 // function prototypes that are used in the code
 void Manual();
@@ -37,6 +43,8 @@ void movingBackwardLeft();
 void movingBackwardRight();
 void speedUp();
 void speedDown();
+
+
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -56,8 +64,15 @@ void setup() {
 
 
   Serial.begin(9600); // Use the default Serial
+  Serial.println("Motor Control Program Initialized");
   Serial.println("ROBOT is Ready!");
   Serial.println(" You Now Are In Manual Mode");
+
+    // Initialize LCD
+  lcd.init();
+  lcd.backlight();   // Turn on the LCD backlight
+  lcd.setCursor(0, 0);
+  lcd.print("You Now Are In Manual Mode");
 
 
 }
@@ -65,17 +80,17 @@ void setup() {
 void loop() {
   // check if the serial port is available
     if (Serial.available()) {
-      Serial.println("Motor Control Program Initialized");
       char input = Serial.read(); // read the incoming byte:
       Serial.print("Received: ");
       Serial.println(input);
 
       if(input == 'M' || input == 'L' || input == 'F'){ // check if the input is one of the modes
           mode = input;
+          lcd.clear();  // Clear the previous message
           switch (mode){
-          case 'M':Serial.println(" You Now Are In Manual Mode");break;
-          case 'L':Serial.println(" You Now Are In Line Following Mode");break;
-          case 'F':Serial.println(" You Now Are In Fire Fighting Mode");break;
+          case 'M':lcd.print("You Now Are In Manual Mode");break;
+          case 'L':lcd.print("You Now Are In Line Following Mode");break;
+          case 'F':lcd.print("You Now Are In Fire Fighting Mode");break;
           }
       }else{
         order = input;
@@ -154,8 +169,7 @@ void movingForward(){
   digitalWrite(MOTOR_R_IN4, LOW);
   analogWrite(speedControlerR, speedValue);
   analogWrite(speedControlerL, speedValue);
-  Serial.println("Moving Forward");
-
+  lcdMessage("MOVING FORWARD");
 }
 
 void movingBackward(){
@@ -165,7 +179,7 @@ void movingBackward(){
   digitalWrite(MOTOR_R_IN4, HIGH);
   analogWrite(speedControlerR, speedValue);
   analogWrite(speedControlerL, speedValue);
-  Serial.println("Moving Backward");
+  lcdMessage("Moving Backward");
 
 }
 
@@ -176,7 +190,9 @@ void turningRight(){
   digitalWrite(MOTOR_R_IN4, HIGH);
   analogWrite(speedControlerR, speedValue);
   analogWrite(speedControlerL, speedValue);
-  Serial.println("Turning Right");
+  lcdMessage("Turning Right");
+
+  
 
 }
 
@@ -187,7 +203,9 @@ void turningLeft(){
   digitalWrite(MOTOR_R_IN4, LOW);
   analogWrite(speedControlerR, speedValue);
   analogWrite(speedControlerL, speedValue);
-  Serial.println("Turning Left");
+  lcdMessage("Turning Left");
+
+
 
 }
 void stopMoving(){
@@ -197,7 +215,8 @@ void stopMoving(){
   digitalWrite(MOTOR_R_IN4, LOW);
   analogWrite(speedControlerR, 0);
   analogWrite(speedControlerL, 0);
-  Serial.println("Stop Moving");
+  lcdMessage("Stop Moving");
+
 }
 void movingForwardLeft(){
   digitalWrite(MOTOR_L_IN1, HIGH);
@@ -206,7 +225,8 @@ void movingForwardLeft(){
   digitalWrite(MOTOR_R_IN4, LOW);
   analogWrite(speedControlerR, speedValue);
   analogWrite(speedControlerL, speedValue-40);
-  Serial.println("Moving Forward Left");
+  lcdMessage("Moving Forward Left");
+
 }
 void movingForwardRight(){
   digitalWrite(MOTOR_L_IN1, HIGH);
@@ -215,7 +235,8 @@ void movingForwardRight(){
   digitalWrite(MOTOR_R_IN4, LOW);
   analogWrite(speedControlerR, speedValue-40);
   analogWrite(speedControlerL, speedValue);
-  Serial.println("Moving Forward Right");
+  lcdMessage("Moving Forward Right");
+
 }
 void movingBackwardLeft(){
   digitalWrite(MOTOR_L_IN1, LOW);
@@ -224,7 +245,8 @@ void movingBackwardLeft(){
   digitalWrite(MOTOR_R_IN4, HIGH);
   analogWrite(speedControlerR, speedValue);
   analogWrite(speedControlerL, speedValue-40);
-  Serial.println("Moving Backward Left");
+  lcdMessage("Moving Backward Left");
+
 }
 
 void movingBackwardRight(){
@@ -234,17 +256,16 @@ void movingBackwardRight(){
   digitalWrite(MOTOR_R_IN4, HIGH);
   analogWrite(speedControlerR, speedValue-40);
   analogWrite(speedControlerL, speedValue);
-  Serial.println("Moving Backward Right");
+  lcdMessage("Moving Backward Right");
+
 }
 void speedUp(){
-
   speedValue += 20;
   speedValue = constrain(speedValue, 0, 255);
   analogWrite(speedControlerR, speedValue);
   analogWrite(speedControlerL, speedValue);
-    Serial.print("updated speed: ");
-    Serial.println(speedValue);
-  
+  lcdMessage("updated speed: ");
+  lcdSpeed();
 }
 
 void speedDown(){
@@ -252,7 +273,22 @@ void speedDown(){
   speedValue = constrain(speedValue, 0, 255);
   analogWrite(speedControlerR, speedValue);
   analogWrite(speedControlerL, speedValue);
-  Serial.print("updated speed: ");
-  Serial.println(speedValue);
+  lcdMessage("updated speed: ");
+  lcdSpeed();
+
+}
+
+void lcdSpeed() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Speed: ");
+  lcd.print(speedValue);
+}
+
+// Helper function to print messages on LCD
+void lcdMessage(const char* message) {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(message);
 }
 
