@@ -1,15 +1,21 @@
-#include <PID_v1.h>
 #include <LiquidCrystal_I2C.h>  // Include the LiquidCrystal_I2C library
 
 /* Create an instance of the LCD display */
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
+// defines varibles  for line_following 
+#define NUM_SENSORS 5  
+#define MAX_SPEED 200
+
+
 #define MOTOR_L_IN1       13
-#define MOTOR_L_IN2       12
-#define MOTOR_R_IN3       11
-#define MOTOR_R_IN4       8 
+#define MOTOR_L_IN2       11
+#define MOTOR_R_IN3       8
+#define MOTOR_R_IN4       7 
 #define speedControlerR   10 
 #define speedControlerL   9
+
+
 
 #define sensor_1st A0
 #define sensor_2nd A1
@@ -18,11 +24,14 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 #define sensor_5th A4
 
 
-
 // variables that are used in the code
-int speedValue = 255 ;
+int speedValue = 255 ; // for manual mode
 char mode = 'M';   // M || L || F
-char order;
+char order= 'k';
+
+
+
+
 
 // fun for lcd
 void lcdSpeed();
@@ -43,6 +52,8 @@ void movingBackwardLeft();
 void movingBackwardRight();
 void speedUp();
 void speedDown();
+void stopAllFuns();
+void moveMotors(int leftSpeed, int rightSpeed);
 
 
 
@@ -55,12 +66,13 @@ void setup() {
   pinMode(MOTOR_R_IN4, OUTPUT);
   pinMode(speedControlerR, OUTPUT);
   pinMode(speedControlerL, OUTPUT);
-  //sensors pins
+
   pinMode(sensor_1st,INPUT);
   pinMode(sensor_2nd,INPUT);
   pinMode(sensor_3th,INPUT);
   pinMode(sensor_4th,INPUT);
   pinMode(sensor_5th,INPUT);
+
 
 
   Serial.begin(9600); // Use the default Serial
@@ -85,6 +97,7 @@ void loop() {
       Serial.println(input);
 
       if(input == 'M' || input == 'L' || input == 'F'){ // check if the input is one of the modes
+          stopAllFuns();
           mode = input;
           lcd.clear();  // Clear the previous message
           switch (mode){
@@ -118,6 +131,7 @@ void loop() {
 
 
 void Manual(){ //1st mode
+    if (mode != 'M') return;  // Exit if mode changed
 
   // set the speed value to be between 0 and 255
   speedValue = constrain(speedValue, 0, 255);
@@ -140,24 +154,25 @@ void Manual(){ //1st mode
 
 
 void LineFollowing(){ //2nd mode
-  speedValue = 180;
-  // code of line following
-  if((digitalRead(sensor_2nd) == 0)  && (digitalRead(sensor_4th) == 0)){
-    movingForward();
-  }else if ((digitalRead(sensor_2nd) == 1)  && (digitalRead(sensor_4th) == 0)){
-    turningLeft();
-  }else if ((digitalRead(sensor_2nd) == 0)  && (digitalRead(sensor_4th) == 1)){
-    turningRight();
-  }else if ((digitalRead(sensor_2nd) == 1)  && (digitalRead(sensor_4th) == 1)){
-    stopMoving();
-  }
+    if (mode != 'L') return;  // Exit if mode changed
+    speedValue = 180;
+    // code of line following
+    if((digitalRead(sensor_2nd) == 0)  && (digitalRead(sensor_4th) == 0)){
+      movingForward();
+    }else if ((digitalRead(sensor_2nd) == 1)  && (digitalRead(sensor_4th) == 0)){
+      turningLeft();
+    }else if ((digitalRead(sensor_2nd) == 0)  && (digitalRead(sensor_4th) == 1)){
+      turningRight();
+    }else if ((digitalRead(sensor_2nd) == 1)  && (digitalRead(sensor_4th) == 1)){
+      stopMoving();
+    }
 
-  
 }
 
 void FireFighting(){ //3th
+  if (mode != 'F') return;  // Exit if mode changed
+
 // code of fire fighting
-  Serial.println(" You Now Are In Fire Fighting Mode");
 
 }
 
@@ -292,3 +307,34 @@ void lcdMessage(const char* message) {
   lcd.print(message);
 }
 
+
+
+
+
+void stopAllFuns(){
+    Serial.println("Stopping previous mode...");
+}
+
+
+
+// void moveMotors(int leftSpeed, int rightSpeed) {
+//     // Left Motor Control
+//     if (leftSpeed > 0) {
+//         digitalWrite(MOTOR_L_IN1, HIGH);
+//         digitalWrite(MOTOR_L_IN2, LOW);
+//     } else {
+//         digitalWrite(MOTOR_L_IN1, LOW);
+//         digitalWrite(MOTOR_L_IN2, HIGH);
+//     }
+//     analogWrite(speedControlerL, abs(leftSpeed));
+
+//     // Right Motor Control
+//     if (rightSpeed > 0) {
+//         digitalWrite(MOTOR_R_IN3, HIGH);
+//         digitalWrite(MOTOR_R_IN4, LOW);
+//     } else {
+//         digitalWrite(MOTOR_R_IN3, LOW);
+//         digitalWrite(MOTOR_R_IN4, HIGH);
+//     }
+//     analogWrite(speedControlerR, abs(rightSpeed));
+// }
